@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Death-Pace Typer</title>
+
+<!-- Added Icon -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231b1b19'/%3E%3Cpath d='M30 40 Q50 10 70 40 Q80 60 50 90 Q20 60 30 40 Z' fill='%23ff5a36' opacity='0.8'/%3E%3Cpath d='M40 50 Q50 30 60 50 Q65 65 50 80 Q35 65 40 50 Z' fill='%231b1b19' opacity='0.4'/%3E%3Ctext x='50' y='68' font-family='Courier New, monospace' font-size='50' font-weight='900' fill='%23ffffff' text-anchor='middle'%3ET%3C/text%3E%3C/svg%3E">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;800&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -151,8 +155,7 @@ const cw=t=>t.trim().split(/\s+/).filter(Boolean).length;
 const scr=s=>B.dataset.s=s;
 function seg(id,key,cast){document.querySelectorAll('#'+id+' button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#'+id+' button').forEach(x=>x.setAttribute('aria-pressed',x===b));S[key]=cast?+b.dataset.v:b.dataset.v;if(key==='kind')newPrompt();if(key==='src')updSrc()})}
 seg('gWords','words',1);seg('gMode','mode');seg('gKind','kind');seg('gSrc','src');
-$('fuseR').oninput=e=>{S.fuse=e.target.value*1000;$('fuseV').textContent=(+e.target.value).toFixed(1)+'s'};
-$('hard').onchange=e=>S.hard=e.target.checked;
+$('fuseR').oninput=e=>{S.fuse=e.target.value*1000;$('fuseV').textContent=(+e.target.value).toFixed(1)+'s'};$('hard').onchange=e=>S.hard=e.target.checked;
 $('snd').onclick=e=>{S.sound=!S.sound;e.target.setAttribute('aria-pressed',S.sound);e.target.textContent=S.sound?'Sound on':'Sound off'};
 $('thm').onclick=()=>{const d=document.documentElement,dark=d.dataset.theme?d.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;d.dataset.theme=dark?'light':'dark'};
 function newPrompt(){const l=PROMPTS[S.kind];S.prompt=l[Math.floor(Math.random()*l.length)];$('prompt').textContent='Prompt: '+S.prompt}
@@ -188,8 +191,7 @@ function loop(now){
  if(S.running&&!S.burned){
   const left=Math.max(0,S.fuse-(now-S.last)),r=left/S.fuse,b=Math.max(0,(0.6-r)/0.6);
   S.low=Math.min(S.low,left);
-  $('arc').style.strokeDashoffset=150.8*(1-r);$('tnum').textContent=(left/1000).toFixed(1);B.style.setProperty('--b',b.toFixed(3));
-  $('editor').classList.toggle('panic',left<1000);
+  $('arc').style.strokeDashoffset=150.8*(1-r);$('tnum').textContent=(left/1000).toFixed(1);B.style.setProperty('--b',b.toFixed(3));$('editor').classList.toggle('panic',left<1000);
   const f=$('foot');
   if(left<1000){if(!S.inPanic){S.inPanic=true;S.panics++}f.className='foot hot';f.textContent='Keep typing.'}
   else{S.inPanic=false;f.className='foot';f.textContent=r<.6?'Slowing down. Your words are getting hot.':(S.hard?'No backspace is on.':'')}
@@ -211,7 +213,7 @@ ed.addEventListener('input',e=>{
  const w=cw(ed.value);$('wc').textContent=w;if(w>=S.goal)win();
 });
 ed.addEventListener('click',()=>{if(S.src!=='free')ed.setSelectionRange(ed.value.length,ed.value.length)});
-ed.addEventListener('keydown',e=>{if(S.src!=='free'&&/^(Arrow|Home$|End$|PageUp|PageDown)/.test(e.key))e.preventDefault();if(S.running)S.last=performance.now();if(S.hard&&(e.key==='Backspace'||e.key==='Delete'))e.preventDefault()});
+ed.addEventListener('keydown',e=>{if(S.src!=='free'&&/^(Arrow|Home$\vert{}End$|PageUp|PageDown)/.test(e.key))e.preventDefault();if(S.running)S.last=performance.now();if(S.hard&&(e.key==='Backspace'||e.key==='Delete'))e.preventDefault()});
 ed.addEventListener('paste',e=>e.preventDefault());
 ed.addEventListener('cut',e=>{if(S.hard)e.preventDefault()});
 function burn(){
@@ -232,7 +234,7 @@ function win(){
  const nb=S.peak>store.best;if(nb)store.best=S.peak;record(true,cw(S.final));
  try{navigator.clipboard.writeText(S.final)}catch(e){}
  $('rSub').textContent=`${S.goal} words written. Your text is already on your clipboard.`;
- $('rPeak').textContent=S.peak+' wpm';$('rAvg').textContent=avg+' wpm';$('rClose').textContent=close+' left';$('rPanic').textContent=S.panics;$('rTime').textContent=S.el;{const acc=S.keys?Math.round((1-S.miss/S.keys)*100):100;$('rAcc').textContent=acc+'%';$('rAccT').hidden=$('rAcc').hidden=S.src==='free'}$('newBest').hidden=!nb;
+ $('rPeak').textContent=S.peak+' wpm';$('rAvg').textContent=avg+' wpm';$('rClose').textContent=close+' left';$('rPanic').textContent=S.panics;$('rTime').textContent=S.el;{const acc=S.keys?Math.round((1-S.miss/S.keys)*100):100;$('rAcc').textContent=acc+'\%';$('rAccT').hidden=$('rAcc').hidden=S.src==='free'}$('newBest').hidden=!nb;
  B.style.setProperty('--b',0);card();scr('result');
 }
 function card(){
@@ -246,8 +248,7 @@ function card(){
 $('shareX').onclick=()=>window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(`I wrote ${S.goal} words without stopping. Peak ${S.peak} wpm, ${S.close} left on the timer at my closest call. Try Death-Pace Typer.`),'_blank');
 $('copyT').onclick=()=>{try{navigator.clipboard.writeText(S.final);$('copyT').textContent='Copied'}catch(e){}setTimeout(()=>$('copyT').textContent='Copy your text',1800)};
 $('start').onclick=start;$('retry').onclick=start;
-$('again').onclick=$('toSetup').onclick=()=>{newPrompt();showStats();scr('setup')};
-$('hello').hidden=!!store.seen;$('gotit').onclick=()=>{store.seen=1;save();$('hello').hidden=true};
+$('again').onclick=$('toSetup').onclick=()=>{newPrompt();showStats();scr('setup')};$('hello').hidden=!!store.seen;$('gotit').onclick=()=>{store.seen=1;save();$('hello').hidden=true};
 document.addEventListener('keydown',e=>{const sc=B.dataset.s;
  if(e.key==='Escape'&&sc!=='setup'){clearInterval(S.iv);S.gen++;S.running=false;S.burned=true;P.length=0;B.style.setProperty('--b',0);ed.classList.remove('panic','ember');updSrc();newPrompt();showStats();scr('setup');return}
  if(e.key==='Enter'&&(sc==='result'||sc==='ash')&&e.target.tagName!=='BUTTON'){e.preventDefault();start()}
