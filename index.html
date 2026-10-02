@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Death-Pace Typer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;800&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#dcdcd7;--ink:#1a1a18;--mute:#6b6b64;--rule:#b9b9b1;--flare:#e5320f;--on-flare:#fff;
+--ui:'Bricolage Grotesque',system-ui,sans-serif;--type:'Courier Prime','Courier New',monospace;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1b19;--ink:#dcdcd5;--mute:#8d8d84;--rule:#363633;--flare:#ff5a36;--on-flare:#1b1b19}}
+:root[data-theme="dark"]{--bg:#1b1b19;--ink:#dcdcd5;--mute:#8d8d84;--rule:#363633;--flare:#ff5a36;--on-flare:#1b1b19}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:var(--bg);color:var(--ink);font-family:var(--ui);--b:0;overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--flare);outline-offset:2px}
+#heat{position:fixed;inset:0;pointer-events:none;opacity:calc(var(--b)*.5);background:radial-gradient(ellipse at 50% 115%,var(--flare),transparent 62%)}
+[hidden]{display:none!important}
+.screen{display:none;height:100%;overflow-y:auto}
+body[data-s=setup] #setup,body[data-s=result] #result,body[data-s=ash] #ash{display:flex}
+body[data-s=game] #game{display:grid}
+.wrap{margin:auto;width:100%;max-width:34rem;padding:2.5rem 1.5rem;display:flex;flex-direction:column;gap:1.6rem}
+h1{font-size:clamp(2.6rem,9vw,4.2rem);line-height:.95;font-weight:800;letter-spacing:-.03em}
+.lede{color:var(--mute);font-size:1.05rem;line-height:1.5;max-width:28rem}
+.row{display:flex;flex-direction:column;gap:.5rem}
+.row>span{font-weight:500;font-size:.95rem}
+.seg{display:flex;flex-wrap:wrap;gap:.4rem}
+.seg button{padding:.5rem .9rem;border:1.5px solid var(--ink);border-radius:2px;font-size:.95rem}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.seg.hot button[aria-pressed=true]{background:var(--flare);border-color:var(--flare);color:var(--on-flare)}
+.slide{display:flex;align-items:center;gap:1rem}
+input[type=range]{flex:1;accent-color:var(--flare)}
+.slide b{font-family:var(--type);min-width:3rem;text-align:right}
+.chk{display:flex;gap:.6rem;align-items:center;font-size:.95rem}
+.chk input{accent-color:var(--flare);width:1.1rem;height:1.1rem}
+.go{padding:1rem;background:var(--flare);color:var(--on-flare);font-weight:800;font-size:1.1rem;border-radius:2px}
+.go:hover{filter:brightness(1.08)}
+.alt{padding:.8rem 1rem;border:1.5px solid var(--ink);border-radius:2px;font-weight:500}
+.alt:hover{background:var(--ink);color:var(--bg)}
+.pb{font-family:var(--type);font-size:.9rem;color:var(--mute);line-height:1.6}
+.top{position:fixed;top:calc(env(safe-area-inset-top,0px) + .6rem);right:.8rem;display:flex;gap:.2rem;z-index:5}
+.top button{padding:.35rem .6rem;font-size:.85rem;color:var(--mute)}
+.top button:hover{color:var(--ink)}
+/* game */
+#game{grid-template-rows:auto auto 1fr auto;height:100%;overflow:hidden}
+#game .wrapE{display:flex;flex-direction:column;min-height:0;position:relative}
+.tgt{flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;width:100%;max-width:46rem;margin:0 auto;padding:1rem 1.5rem;font-family:var(--type);font-size:clamp(1.05rem,2.4vw,1.25rem);line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere;color:color-mix(in srgb,var(--ink),var(--flare) calc(var(--b)*100%))}
+.tgt::-webkit-scrollbar{display:none}
+.tgt .u{opacity:.38}.tgt .x{color:var(--flare);background:color-mix(in srgb,var(--flare),transparent 70%)}.tgt .c{box-shadow:inset 3px 0 var(--flare)}
+#editor.ghost{position:absolute;inset:0;opacity:0;max-width:none;margin:0;height:100%}
+#own{width:100%;min-height:6rem;padding:.7rem;background:none;border:1.5px solid var(--ink);border-radius:2px;font-family:var(--type);font-size:.95rem;color:var(--ink);resize:vertical}
+.hud{display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem .6rem;gap:1rem;font-family:var(--type)}
+.hud big{font-size:1.5rem;font-weight:700}
+.hud small{color:var(--mute)}
+.prompt{padding:0 1.5rem;max-width:46rem;margin:0 auto;width:100%;color:var(--mute);font-size:.95rem;font-style:italic;min-height:1.4rem}
+.ring{position:relative;width:60px;height:60px}
+.ring svg{transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:4}
+.ring .tr{stroke:var(--rule)}
+#arc{stroke:var(--flare);stroke-linecap:round;stroke-dasharray:150.8;stroke-dashoffset:0}
+#tnum{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--type);font-weight:700;font-size:1rem}
+#editor{flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;width:100%;max-width:46rem;margin:0 auto;padding:1rem 1.5rem;background:none;border:0;outline:0;resize:none;font-family:var(--type);font-size:clamp(1.05rem,2.4vw,1.25rem);line-height:1.75;
+color:color-mix(in srgb,var(--ink),var(--flare) calc(var(--b)*100%));caret-color:var(--flare)}
+#editor::-webkit-scrollbar{display:none}
+#editor.panic{animation:jit .09s infinite}
+@keyframes jit{25%{transform:translate(-1px,1px)}75%{transform:translate(1px,-1px)}}
+#editor.ember{pointer-events:none}
+.foot{padding:.5rem 1.5rem 1rem;font-family:var(--type);font-size:.85rem;color:var(--mute);text-align:center;min-height:2rem}
+.foot.hot{color:var(--flare);font-weight:700}
+/* result */
+dl{display:grid;grid-template-columns:1fr auto;gap:.5rem 1rem;font-family:var(--type);border-top:1.5px solid var(--ink);padding-top:1rem}
+dt{color:var(--mute)}dd{font-weight:700;text-align:right}
+canvas{width:100%;height:auto;border:1.5px solid var(--rule)}
+.btns{display:flex;gap:.6rem;flex-wrap:wrap}.btns>*{flex:1;min-width:8rem}
+.new{background:var(--flare);color:var(--on-flare);padding:.15rem .5rem;font-family:var(--type);font-size:.8rem;font-weight:700;align-self:flex-start}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:6}
+.hello{display:flex;gap:1rem;align-items:center;justify-content:space-between;border:1.5px solid var(--ink);padding:.8rem 1rem;font-size:.95rem;line-height:1.4}.hello .alt{padding:.4rem .8rem;flex:none}
+@media (prefers-reduced-motion:reduce){#editor.panic{animation:none}}
+</style>
+</head>
+<body data-s="setup">
+<div id="heat"></div><canvas id="fx"></canvas>
+<div class="top"><button id="snd" aria-pressed="true">Sound on</button><button id="thm">Theme</button></div>
+
+<main class="screen" id="setup"><div class="wrap">
+  <h1>Death-Pace Typer</h1>
+  <p class="lede">Write without stopping. When the timer runs out, your words burn. Finish your word count and keep what you wrote.</p>
+  <div class="hello" id="hello" hidden><span>First time? Pick a goal and start typing. If the timer reaches zero, your words burn.</span><button class="alt" id="gotit">Got it</button></div>
+  <div class="row"><span>What do you type?</span><div class="seg" id="gSrc"><button data-v="free" aria-pressed="true">Write freely</button><button data-v="passage">Copy a passage</button><button data-v="own">Copy my own text</button></div></div>
+  <textarea id="own" hidden placeholder="Paste the text you want to type"></textarea>
+  <div class="row" id="rowWords"><span>Word goal</span><div class="seg" id="gWords"><button data-v="50">50</button><button data-v="150" aria-pressed="true">150</button><button data-v="250">250</button><button data-v="500">500</button></div></div>
+  <div class="row"><span>Timer length</span><div class="slide"><input type="range" id="fuseR" min="2" max="6" step=".5" value="3" aria-label="Timer length"><b id="fuseV">3.0s</b></div></div>
+  <div class="row"><span>When the timer runs out</span><div class="seg hot" id="gMode"><button data-v="ember" aria-pressed="true">Words burn from the end</button><button data-v="sudden">Everything burns at once</button></div></div>
+  <div class="row" id="rowKind"><span>What are you writing?</span><div class="seg" id="gKind"><button data-v="email" aria-pressed="true">Cold email</button><button data-v="essay">Essay</button><button data-v="pitch">Pitch</button><button data-v="story">Story</button></div></div>
+  <label class="chk"><input type="checkbox" id="hard"> No backspace. Mistakes stay on the page.</label>
+  <div class="pb" id="prompt"></div>
+  <button class="go" id="start">Start writing</button>
+  <div class="pb" id="stats"></div>
+  <p class="pb">Ctrl+Enter starts a run. Esc quits a run or returns here. Your scores stay in this browser, no account needed.</p>
+</div></main>
+
+<section class="screen" id="game">
+  <div class="hud"><div><big><span id="wc">0</span></big><small> / <span id="wt">150</span> words</small></div><div class="ring"><svg viewBox="0 0 60 60" width="60" height="60"><circle class="tr" cx="30" cy="30" r="24"/><circle id="arc" cx="30" cy="30" r="24"/></svg><div id="tnum">3.0</div></div><div><big id="wpm">0</big><small> wpm</small></div></div>
+  <div class="prompt" id="gPrompt"></div>
+  <div class="wrapE">
+    <div id="tgt" class="tgt" hidden></div>
+    <textarea id="editor" aria-label="Writing area" spellcheck="true" placeholder="Start typing. The timer starts on your first key."></textarea>
+  </div>
+  <div class="foot" id="foot"></div>
+</section>
+
+<main class="screen" id="result"><div class="wrap">
+  <h1>You kept it.</h1>
+  <div class="new" id="newBest" hidden>New best pace</div>
+  <p class="lede" id="rSub"></p>
+  <dl><dt>Peak pace</dt><dd id="rPeak"></dd><dt>Average pace</dt><dd id="rAvg"></dd><dt id="rAccT">Accuracy</dt><dd id="rAcc"></dd><dt>Closest call</dt><dd id="rClose"></dd><dt>Times under 1 second</dt><dd id="rPanic"></dd><dt>Total time</dt><dd id="rTime"></dd></dl>
+  <canvas id="card" width="1200" height="630" aria-label="Result card"></canvas>
+  <p class="pb">Press and hold or right-click the card to save it.</p>
+  <p class="pb">Enter to go again. Esc for setup.</p>
+  <div class="btns"><button class="alt" id="shareX">Share on X</button><button class="alt" id="copyT">Copy your text</button><button class="alt" id="again">Write again</button></div>
+</div></main>
+
+<main class="screen" id="ash"><div class="wrap">
+  <h1>It burned.</h1>
+  <p class="lede" id="aMsg"></p>
+  <p class="pb" id="aSub"></p>
+  <p class="pb">Enter to try again. Esc for setup.</p>
+  <div class="btns"><button class="go" id="retry">Try again</button><button class="alt" id="toSetup">Change settings</button></div>
+</div></main>
+
+<script>
+const $=id=>document.getElementById(id),B=document.body;
+const PROMPTS={email:["Pitch yourself to a founder whose product you use daily.","Ask a stranger for 15 minutes of their time, without apologizing.","Follow up on a message nobody answered."],
+essay:["Argue for something you used to disagree with.","Explain a thing you know well to someone who has never heard of it.","What does your work get wrong about itself?"],
+pitch:["Sell an app that fixes one annoying everyday problem.","You have 60 seconds with an investor. Go.","Describe your product to a skeptical engineer."],
+story:["A person finds a door in a place that had no door.","Two strangers share a delayed train. One is lying.","Write the last page of a story first."]};
+const POOL=['The best way to learn something is to build it badly first, then fix what breaks. Every bug you chase teaches you more than a tutorial ever could, so ship the rough version today.','A good message is short and specific. Say who you are, what you want, and why it matters to them. Then stop writing, because the longer it runs the less likely anyone is to answer.','Morning light came through the window and landed on the keyboard. The coffee had gone cold an hour ago, but the code finally compiled, and for a moment that was all that mattered.','Consistency beats intensity. An hour of focused work every day will carry you further than a weekend of heroics followed by a week of recovery and excuses.','Nobody remembers the first draft. They remember the version you were brave enough to show. Write it fast, fix it later, and let the finished thing speak for you.','The train pulled out of the station without a sound. She watched the platform shrink until it was only a thin grey line, and then she opened the notebook and began to write.','Great products usually start with one annoying problem. Find something that wastes ten minutes of your day, remove it completely, and you may have found something other people will pay for.','Speed comes from relaxing, not from trying harder. Keep your hands loose, your eyes ahead of your fingers, and let the words arrive before you decide whether they are good.','A small team that talks every day will outrun a large team that meets every week. Short feedback loops turn mistakes into lessons before they have time to become habits.','The sea was calm that evening, and the harbor lights wobbled on the water. Somewhere a bell rang twice, and the fishermen began to untie their boats for the night shift.'];
+const S={gen:0,iv:0,src:'free',target:'',keys:0,miss:0,goal:150,words:150,fuse:3000,mode:'ember',kind:'email',hard:false,sound:true,started:false,running:false,burned:false,last:0,t0:0,peak:0,panics:0,low:9e9,inPanic:false,prompt:'',tickAt:0,wpmAt:0};
+let store={best:0,runs:[]};try{store=Object.assign(store,JSON.parse(localStorage.getItem('dpt')||'{}'))}catch(e){}
+const save=()=>{try{localStorage.setItem('dpt',JSON.stringify(store))}catch(e){}};
+const cw=t=>t.trim().split(/\s+/).filter(Boolean).length;
+const scr=s=>B.dataset.s=s;
+function seg(id,key,cast){document.querySelectorAll('#'+id+' button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#'+id+' button').forEach(x=>x.setAttribute('aria-pressed',x===b));S[key]=cast?+b.dataset.v:b.dataset.v;if(key==='kind')newPrompt();if(key==='src')updSrc()})}
+seg('gWords','words',1);seg('gMode','mode');seg('gKind','kind');seg('gSrc','src');
+$('fuseR').oninput=e=>{S.fuse=e.target.value*1000;$('fuseV').textContent=(+e.target.value).toFixed(1)+'s'};
+$('hard').onchange=e=>S.hard=e.target.checked;
+$('snd').onclick=e=>{S.sound=!S.sound;e.target.setAttribute('aria-pressed',S.sound);e.target.textContent=S.sound?'Sound on':'Sound off'};
+$('thm').onclick=()=>{const d=document.documentElement,dark=d.dataset.theme?d.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;d.dataset.theme=dark?'light':'dark'};
+function newPrompt(){const l=PROMPTS[S.kind];S.prompt=l[Math.floor(Math.random()*l.length)];$('prompt').textContent='Prompt: '+S.prompt}
+function updSrc(){$('own').hidden=S.src!=='own';$('rowWords').hidden=S.src==='own';$('rowKind').hidden=S.src!=='free';$('prompt').hidden=S.src!=='free'}
+function renderT(){if(S.src==='free')return;const v=ed.value,t=S.target;let h='';for(let i=0;i<t.length;i++){const ch=t[i]==='&'?'&amp;':t[i]==='<'?'&lt;':t[i],c=i<v.length?(v[i]===t[i]?'o':'x'):(i===v.length?'u c':'u');h+='<span class="'+c+'">'+ch+'</span>'}$('tgt').innerHTML=h;const cur=$('tgt').querySelector('.c');if(cur)cur.scrollIntoView({block:'nearest'})}
+function showStats(){const r=store.runs;$('stats').textContent=r.length?`Best pace ${store.best} wpm. Survived ${r.filter(x=>x.won).length} of ${r.length} runs.`:'No runs yet.'}
+// audio
+let ac;const A=()=>ac||(ac=new(window.AudioContext||window.webkitAudioContext)());
+function tone(f,d,type='square',g=.04,at=0){if(!S.sound)return;try{const c=A(),o=c.createOscillator(),e=c.createGain(),t=c.currentTime+at;o.type=type;o.frequency.value=f;e.gain.setValueAtTime(g,t);e.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(e);e.connect(c.destination);o.start(t);o.stop(t+d)}catch(e){}}
+function crackle(){if(!S.sound)return;try{const c=A(),n=c.sampleRate*.7,b=c.createBuffer(1,n,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(c.sampleRate*.18))*(Math.random()<.3?1:.15);const s=c.createBufferSource(),g=c.createGain();s.buffer=b;g.gain.value=.5;s.connect(g);g.connect(c.destination);s.start()}catch(e){}}
+// ash and embers
+const fx=$('fx'),fc=fx.getContext('2d'),P=[],RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const fit=()=>{fx.width=innerWidth;fx.height=innerHeight};fit();addEventListener('resize',fit);
+function anchor(){if(S.src!=='free'){const c=$('tgt').querySelector('.c');if(c){const r=c.getBoundingClientRect();return[r.left+Math.random()*80,r.top+r.height/2]}}
+ const r=ed.getBoundingClientRect();return[r.left+24+Math.random()*Math.min(r.width-48,640),r.top+Math.min(ed.scrollHeight-ed.scrollTop,r.height)-30]}
+function spark(n,hot){if(RM)return;for(let i=0;i<n;i++){const[x,y]=anchor();P.push({x,y,vx:(Math.random()-.5)*.8,vy:.3+Math.random()*1.3,s:1.5+Math.random()*3,l:1,d:.006+Math.random()*.01,hot,ph:Math.random()*6})}}
+(function fxLoop(){fc.clearRect(0,0,fx.width,fx.height);if(P.length){const fl=getComputedStyle(document.documentElement).getPropertyValue('--flare'),ink=getComputedStyle(B).color;
+ for(let i=P.length-1;i>=0;i--){const p=P[i];p.ph+=.05;p.x+=p.vx+Math.sin(p.ph)*.5;p.y+=p.vy;p.l-=p.d;if(p.l<=0||p.y>fx.height){P.splice(i,1);continue}fc.globalAlpha=p.l;fc.fillStyle=p.hot?fl:ink;fc.fillRect(p.x,p.y,p.s,p.s*(.6+Math.sin(p.ph)*.3))}fc.globalAlpha=1}requestAnimationFrame(fxLoop)})();
+// game
+function start(){
+ S.gen++;clearInterval(S.iv);
+ if(S.src==='free')S.goal=S.words;
+ else{let t;if(S.src==='own'){t=$('own').value.trim().replace(/\s+/g,' ');if(!t){$('own').focus();return}}
+ else{const p=POOL.slice().sort(()=>Math.random()-.5);let w=[];for(let i=0;w.length<S.words;i++)w=w.concat(p[i%p.length].split(' '));t=w.slice(0,S.words).join(' ')}
+ S.target=t;S.goal=cw(t)}
+ Object.assign(S,{keys:0,miss:0,started:false,running:false,burned:false,last:0,t0:0,peak:0,panics:0,low:9e9,inPanic:false,wpmAt:0});
+ const e=$('editor');e.value='';e.readOnly=false;e.className='';if(S.src!=='free')e.classList.add('ghost');$('tgt').hidden=S.src==='free';B.style.setProperty('--b',0);
+ $('wc').textContent=0;$('wt').textContent=S.goal;$('wpm').textContent=0;$('gPrompt').textContent=S.src==='free'?S.prompt:'Type the text exactly as shown. Wrong letters turn red until you fix them.';
+ $('arc').style.strokeDashoffset=0;$('tnum').textContent=(S.fuse/1000).toFixed(1);$('foot').className='foot';$('foot').textContent=S.hard?'No backspace is on.':'';
+ renderT();scr('game');e.focus();
+}
+function loop(now){
+ if(S.running&&!S.burned){
+  const left=Math.max(0,S.fuse-(now-S.last)),r=left/S.fuse,b=Math.max(0,(0.6-r)/0.6);
+  S.low=Math.min(S.low,left);
+  $('arc').style.strokeDashoffset=150.8*(1-r);$('tnum').textContent=(left/1000).toFixed(1);B.style.setProperty('--b',b.toFixed(3));
+  $('editor').classList.toggle('panic',left<1000);
+  const f=$('foot');
+  if(left<1000){if(!S.inPanic){S.inPanic=true;S.panics++}f.className='foot hot';f.textContent='Keep typing.'}
+  else{S.inPanic=false;f.className='foot';f.textContent=r<.6?'Slowing down. Your words are getting hot.':(S.hard?'No backspace is on.':'')}
+  if(left<1000&&Math.random()<.5)spark(1,1);else if(r<.4&&Math.random()<.08)spark(1,0);
+  if(r<.6&&now-S.tickAt>(r<.3?160:380)){S.tickAt=now;tone(r<.3?900:600,.04,'square',.03)}
+  if(now-S.wpmAt>500){S.wpmAt=now;const m=(now-S.t0)/6e4,w=m>.03?Math.round(cw($('editor').value)/m):0;S.peak=Math.max(S.peak,w);$('wpm').textContent=w}
+  if(left===0)burn();
+ }
+ requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+const ed=$('editor');
+ed.addEventListener('input',e=>{
+ if(S.burned)return;
+ if(!S.started&&ed.value){S.started=S.running=true;S.t0=performance.now()}
+ if(!S.running)return;
+ S.last=performance.now();
+ if(S.src!=='free'){if(ed.value.length>S.target.length)ed.value=ed.value.slice(0,S.target.length);if(e.inputType&&e.inputType.startsWith('insert')){const i=ed.value.length-1;S.keys++;if(ed.value[i]!==S.target[i])S.miss++}renderT();$('wc').textContent=cw(ed.value);if(ed.value===S.target)win();return}
+ const w=cw(ed.value);$('wc').textContent=w;if(w>=S.goal)win();
+});
+ed.addEventListener('click',()=>{if(S.src!=='free')ed.setSelectionRange(ed.value.length,ed.value.length)});
+ed.addEventListener('keydown',e=>{if(S.src!=='free'&&/^(Arrow|Home$|End$|PageUp|PageDown)/.test(e.key))e.preventDefault();if(S.running)S.last=performance.now();if(S.hard&&(e.key==='Backspace'||e.key==='Delete'))e.preventDefault()});
+ed.addEventListener('paste',e=>e.preventDefault());
+ed.addEventListener('cut',e=>{if(S.hard)e.preventDefault()});
+function burn(){
+ S.burned=true;S.running=false;crackle();ed.classList.remove('panic');ed.readOnly=true;
+ const total=cw(ed.value),text=ed.value,g=S.gen;
+ const done=()=>{if(g!==S.gen)return;$('aMsg').textContent=total?`${total} words turned to ash.`:'Nothing was left to burn.';$('aSub').textContent=`You got to ${(S.goal?Math.round(total/S.goal*100):0)}% of your ${S.goal}-word goal.`;record(false,total);B.style.setProperty('--b',0);scr('ash')};
+ if(S.mode==='sudden'){spark(90,1);ed.value='';renderT();setTimeout(done,700);return}
+ ed.classList.add('ember');
+ const step=Math.max(3,Math.ceil(text.length/40));
+ const iv=S.iv=setInterval(()=>{spark(5,1);ed.value=ed.value.slice(0,-step);renderT();$('wc').textContent=cw(ed.value);tone(200+Math.random()*300,.03,'sawtooth',.03);if(!ed.value){clearInterval(iv);setTimeout(done,400)}},45);
+}
+function record(won,words){store.runs=[{won,words,goal:S.goal,kind:S.kind,wpm:S.peak,at:Date.now()},...store.runs].slice(0,20);save()}
+function win(){
+ if(!S.running)return;S.running=false;S.final=ed.value;
+ const el=(performance.now()-S.t0)/1000,avg=Math.round(cw(S.final)/(el/60)),close=(S.low/1000).toFixed(2)+'s';
+ S.avg=avg;S.close=close;S.el=el>=60?`${Math.floor(el/60)}m ${Math.floor(el%60)}s`:`${Math.floor(el)}s`;
+ [523,659,784,1047].forEach((f,i)=>tone(f,.9,'triangle',.08,i*.07));
+ const nb=S.peak>store.best;if(nb)store.best=S.peak;record(true,cw(S.final));
+ try{navigator.clipboard.writeText(S.final)}catch(e){}
+ $('rSub').textContent=`${S.goal} words written. Your text is already on your clipboard.`;
+ $('rPeak').textContent=S.peak+' wpm';$('rAvg').textContent=avg+' wpm';$('rClose').textContent=close+' left';$('rPanic').textContent=S.panics;$('rTime').textContent=S.el;{const acc=S.keys?Math.round((1-S.miss/S.keys)*100):100;$('rAcc').textContent=acc+'%';$('rAccT').hidden=$('rAcc').hidden=S.src==='free'}$('newBest').hidden=!nb;
+ B.style.setProperty('--b',0);card();scr('result');
+}
+function card(){
+ const c=$('card'),x=c.getContext('2d'),dark=getComputedStyle(B).backgroundColor,ink=getComputedStyle(B).color,fl=getComputedStyle(document.documentElement).getPropertyValue('--flare').trim();
+ x.fillStyle=dark;x.fillRect(0,0,1200,630);x.fillStyle=ink;x.font='800 64px "Bricolage Grotesque",Arial';x.fillText('Death-Pace Typer',60,110);
+ x.font='28px "Courier Prime","Courier New",monospace';x.globalAlpha=.65;x.fillText(`Survived ${S.goal} words ${S.src==='free'?'as a '+({email:'cold email',essay:'essay',pitch:'pitch',story:'story'})[S.kind]:'copying a passage'}${S.hard?', no backspace':''}`,60,160);x.globalAlpha=1;
+ [['Peak pace',S.peak+' wpm'],['Average pace',S.avg+' wpm'],['Closest call',S.close],['Total time',S.el]].forEach((s,i)=>{const px=60+i*285;x.fillStyle=ink;x.globalAlpha=.6;x.font='24px "Courier Prime",monospace';x.fillText(s[0],px,300);x.globalAlpha=1;x.font='700 46px "Courier Prime",monospace';x.fillText(s[1],px,360)});
+ x.lineWidth=14;x.strokeStyle=ink;x.globalAlpha=.2;x.beginPath();x.arc(1040,470,64,0,7);x.stroke();x.globalAlpha=1;x.strokeStyle=fl;x.lineCap='round';x.beginPath();x.arc(1040,470,64,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.max(.02,S.low/S.fuse));x.stroke();
+ x.fillStyle=ink;x.globalAlpha=.6;x.font='22px "Courier Prime",monospace';x.fillText('Closest call: '+S.close+' left on the timer',60,596);x.globalAlpha=1;
+}
+$('shareX').onclick=()=>window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(`I wrote ${S.goal} words without stopping. Peak ${S.peak} wpm, ${S.close} left on the timer at my closest call. Try Death-Pace Typer.`),'_blank');
+$('copyT').onclick=()=>{try{navigator.clipboard.writeText(S.final);$('copyT').textContent='Copied'}catch(e){}setTimeout(()=>$('copyT').textContent='Copy your text',1800)};
+$('start').onclick=start;$('retry').onclick=start;
+$('again').onclick=$('toSetup').onclick=()=>{newPrompt();showStats();scr('setup')};
+$('hello').hidden=!!store.seen;$('gotit').onclick=()=>{store.seen=1;save();$('hello').hidden=true};
+document.addEventListener('keydown',e=>{const sc=B.dataset.s;
+ if(e.key==='Escape'&&sc!=='setup'){clearInterval(S.iv);S.gen++;S.running=false;S.burned=true;P.length=0;B.style.setProperty('--b',0);ed.classList.remove('panic','ember');updSrc();newPrompt();showStats();scr('setup');return}
+ if(e.key==='Enter'&&(sc==='result'||sc==='ash')&&e.target.tagName!=='BUTTON'){e.preventDefault();start()}
+ if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)&&sc==='setup'){e.preventDefault();start()}});
+updSrc();newPrompt();showStats();
+</script>
+</body>
+</html>
